@@ -1,43 +1,47 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { authApi } from "../api/auth.api";
 
 const AuthContext = createContext(null);
 
+const loadUserFromStorage = () => {
+  try {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(loadUserFromStorage);
+  const loading = false;
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
+  const persistUser = (userData) => {
+    if (userData) {
+      localStorage.setItem("user", JSON.stringify(userData));
+    } else {
+      localStorage.removeItem("user");
     }
-
-    authApi
-      .getMe()
-      .then((res) => setUser(res.data.user))
-      .catch(() => localStorage.removeItem("token"))
-      .finally(() => setLoading(false));
-  }, []);
+    setUser(userData);
+  };
 
   const login = async (credentials) => {
     const res = await authApi.login(credentials);
     localStorage.setItem("token", res.data.token);
-    setUser(res.data.user);
+    persistUser(res.data.user);
     return res.data;
   };
 
   const register = async (data) => {
     const res = await authApi.register(data);
     localStorage.setItem("token", res.data.token);
-    setUser(res.data.user);
+    persistUser(res.data.user);
     return res.data;
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setUser(null);
+    persistUser(null);
   };
 
   return (
