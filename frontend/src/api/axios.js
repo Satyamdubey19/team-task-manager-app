@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const api = axios.create({
-  baseURL: "https://team-task-manager-app-production-09f4.up.railway.app/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://team-task-manager-app-production-1e23.up.railway.app/api",
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
