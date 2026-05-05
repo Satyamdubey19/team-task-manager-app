@@ -9,7 +9,7 @@ import Projects from "../pages/Projects";
 import ProjectDetail from "../pages/ProjectDetail";
 import MyTasks from "../pages/MyTasks";
 import Loader from "../components/common/Loader";
-
+import Loader from "../components/common/Loader";
 const AppRouter = () => {
   const { loading } = useAuth();
 
