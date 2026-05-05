@@ -1,11 +1,26 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
+const validateSignup = (form) => {
+  const errors = {};
+  if (!form.name.trim()) errors.name = "Full name is required";
+  else if (form.name.trim().length < 2)
+    errors.name = "Name must be at least 2 characters";
+  if (!form.email.trim()) errors.email = "Email is required";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    errors.email = "Enter a valid email address";
+  if (!form.password) errors.password = "Password is required";
+  else if (form.password.length < 6)
+    errors.password = "Password must be at least 6 characters";
+  else if (!/\d/.test(form.password))
+    errors.password = "Password must contain at least one number";
+  return errors;
+};
+
 const Signup = () => {
-  const { register, user } = useAuth();
-  const navigate = useNavigate();
+  const { register } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -15,17 +30,19 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateSignup(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     setErrors({});
     setLoading(true);
     try {
       await register(form);
       toast.success("Account created!");
+      window.location.replace("/#/dashboard");
     } catch (err) {
       const apiErrors = err.response?.data?.errors;
       if (apiErrors) {
@@ -34,6 +51,8 @@ const Signup = () => {
           map[e.path] = e.msg;
         });
         setErrors(map);
+      } else {
+        toast.error(err.response?.data?.message || "Registration failed");
       }
     } finally {
       setLoading(false);

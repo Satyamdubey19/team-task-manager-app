@@ -1,26 +1,38 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
+const validateLogin = (form) => {
+  const errors = {};
+  if (!form.email.trim()) errors.email = "Email is required";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+    errors.email = "Enter a valid email address";
+  if (!form.password) errors.password = "Password is required";
+  else if (form.password.length < 6)
+    errors.password = "Password must be at least 6 characters";
+  return errors;
+};
+
 const Login = () => {
-  const { login, user } = useAuth();
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateLogin(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     setErrors({});
     setLoading(true);
     try {
       await login(form);
       toast.success("Welcome back!");
+      window.location.replace("/#/dashboard");
     } catch (err) {
       const apiErrors = err.response?.data?.errors;
       if (apiErrors) {
@@ -29,6 +41,8 @@ const Login = () => {
           map[e.path] = e.msg;
         });
         setErrors(map);
+      } else {
+        toast.error(err.response?.data?.message || "Invalid email or password");
       }
     } finally {
       setLoading(false);
