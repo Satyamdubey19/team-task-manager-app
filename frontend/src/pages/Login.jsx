@@ -1,14 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +21,6 @@ const Login = () => {
     try {
       await login(form);
       toast.success("Welcome back!");
-      navigate("/dashboard");
     } catch (err) {
       const apiErrors = err.response?.data?.errors;
       if (apiErrors) {

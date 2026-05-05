@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 
 const Signup = () => {
-  const { register } = useAuth();
+  const { register, user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -15,6 +15,10 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
@@ -22,7 +26,6 @@ const Signup = () => {
     try {
       await register(form);
       toast.success("Account created!");
-      navigate("/dashboard");
     } catch (err) {
       const apiErrors = err.response?.data?.errors;
       if (apiErrors) {
