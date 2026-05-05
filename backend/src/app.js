@@ -28,9 +28,27 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      // Allow any Railway subdomain or explicitly listed origins
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".railway.app") ||
+        origin.endsWith(".up.railway.app")
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );

@@ -2,7 +2,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "https://team-task-manager-app-production-09f4.up.railway.app/api",
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
@@ -19,7 +19,7 @@ api.interceptors.response.use(
     const message = error.response?.data?.message || "Something went wrong";
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      window.location.href = "/#/login";
     } else if (error.response?.status !== 422) {
       toast.error(message);
     }
