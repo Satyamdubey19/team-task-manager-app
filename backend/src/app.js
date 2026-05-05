@@ -13,13 +13,12 @@ const { errorHandler, notFound } = require("./middleware/error.middleware");
 
 const app = express();
 
-// Security middleware
 app.use(helmet());
 app.use(mongoSanitize());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: {
     success: false,
@@ -36,21 +35,9 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, curl, Postman)
-      if (!origin) return callback(null, true);
-      // Allow any Railway subdomain or explicitly listed origins
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".railway.app") ||
-        origin.endsWith(".up.railway.app")
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: process.env.FRONTEND_URL,
     credentials: true,
-  }),
+  })
 );
 
 // Body parsers
